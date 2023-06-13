@@ -3,9 +3,8 @@
 """
 Created on Thu Aug 25 07:52:32 2022
 
-@author: konrai
 今までは1枚ずつやっていたが、まとめて葉の輪郭座標を取得したい!
-一気に全画像の輪郭を抽出する
+一気に全画像の輪郭を抽出するという思いで書かれたコード
 """
 
 #%% import libraries
@@ -17,6 +16,8 @@ import csv
 import math
 import os
 import glob
+import tkinter as tk
+from tkinter import filedialog # ファイルダイアログでファイルを選択できるようにする
 
 #%% define function
 # pixelをmmに変換する関数
@@ -36,16 +37,18 @@ dir = '/Users/konrai/Library/CloudStorage/Dropbox/hawaii_leaf_personal' # origin
 os.chdir(dir) # set working directory
 # dir_csv = './Quercus_全体共有/' + site +'EFD/csv' # 使われていない変数
 #files = glob.glob('./Quercus_画像/' + site + '/original/*.jpg') # All scan image are loaded
-dir_img = '2014_leaf_scan' # フォルダ単位での処理
-files = glob.glob('./' + dir_img + '/*.jpg') # All scan image are loaded
+root=tk.Tk()
+root.withdraw()
+choosed_file = filedialog.askopenfilenames(initialdir = dir)
 
 #%% main processing
 thresh = 170 # Threshold value (arbitrary value)
 margin = 10 # トリミング画像の四方の余白
-r = 100 # 何を表すか忘れた
+r = 100 # 多分重心の十字の線の長さだと思う
 thresh_area = 300 # 面積の閾値 (単位は多分pixel?) ハワイフトモモだとこれの値が小さくなることに注意
 thresh_area_up = 1000000 # もし上限を設定したかったらこのパラメータをいじる。
 y_min = 150 # スケールを省く：上から指定することに注意
+x_min = 50 # スケールを省く：上から指定することに注意
 
 for file_src in files:
     # file_name = file_src.split(sep='/')[4].split(sep='.')[0] # ID(アルファベット+4ケタ数字)のみを取り出し
@@ -58,7 +61,7 @@ for file_src in files:
     width = img_src.shape[1]
 
     # スケールを省く
-    img_src = img_src[y_min:height, 0:width]
+    img_src = img_src[y_min:height, x_min:width]
 
     ret, im_bin = cv2.threshold(img_src, thresh, 255, cv2.THRESH_BINARY_INV) # binary image
 
@@ -83,12 +86,12 @@ for file_src in files:
     img_id_all = img_blank_3ch.copy()
     d_csv = [['ID1', 'ID2', 'area', 'perimeter', 'roundness', 'width', 'length']]
     img_lbl = cv2.imread(file_src, cv2.IMREAD_COLOR)
-    img_lbl = img_lbl[y_min:height, 0:width]
+    img_lbl = img_lbl[y_min:height, x_min:width]
 
     ID = 1
     for LID in leaf_ID:
         img_cnt = cv2.imread(file_src, cv2.IMREAD_COLOR)
-        img_cnt = img_cnt[y_min:height, 0:width]
+        img_cnt = img_cnt[y_min:height, x_min:width]
         cv2.drawContours(img_cnt, contours, LID, color=(255,0,0), thickness=10) # 元画像の上に赤色で輪郭を描画
         img_id = img_blank.copy()
         cv2.drawContours(img_id, contours, LID, color=(255,255,255), thickness=-1) # 黒のブランク画像の上に輪郭を白塗りつぶしで描画
@@ -103,7 +106,7 @@ for file_src in files:
 
         # それぞれのラベル画像を1枚ずつトリミングして保存
         img_trm = cv2.imread(file_src, cv2.IMREAD_COLOR)
-        img_trm = img_trm[y_min:height, 0:width]
+        img_trm = img_trm[y_min:height, x_min:width]
         img_trm = img_trm[y-margin : y+h+margin, x-margin : x+w+margin] # 少し余白を取って保存
         #img_trm = img_trm[y-margin : y+h+margin, x: x+w+margin] # marginとって右側見切れているときはこっちを使う。
         save_name_trimming = save_name + '_' + str(ID) + '.jpg'
