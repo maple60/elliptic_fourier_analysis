@@ -30,13 +30,11 @@ def cvtmm(x, dpi=300): # xはピクセル数
 #cvtmm(300)
 
 #%% directory setting
-# dir = '/Users/konrai/Dropbox/Quercus' # original scan images
-dir = '/Users/konrai/Library/CloudStorage/Dropbox/hawaii_leaf_personal' # original scan images
 
-#site = '調査-宮城'
+dir = '/Users/konrai/Library/CloudStorage/Dropbox/hawaii_leaf_personal' # original scan images
 os.chdir(dir) # set working directory
-# dir_csv = './Quercus_全体共有/' + site +'EFD/csv' # 使われていない変数
-#files = glob.glob('./Quercus_画像/' + site + '/original/*.jpg') # All scan image are loaded
+
+# 処理するファイルをGUIで選択する
 root=tk.Tk()
 root.withdraw()
 choosed_file = filedialog.askopenfilenames(initialdir = dir)
